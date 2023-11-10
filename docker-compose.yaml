@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  node_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: team_management_node_app
+    restart: always
+    environment:
+      - NODE_PORT=4001
+      # - DB_HOST=127.0.0.1
+      - DB_HOST=myMongo
+      - DB_USER=root
+      - DB_PASSWORD=example
+      - DB_NAME=teamManagementdb
+      - DB_PORT=27017
+    volumes:
+      - ./:/app
+    ports:
+      - '4001:4001'
+    depends_on:
+      - myMongo
+    networks:
+      - node-webapp-network
+
+  myMongo:
+    image: mongo:latest
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb-data:/data/db
+      - ./app/config/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    command: [--auth]
+    networks:
+      - node-webapp-network
+
+volumes:
+  mongodb-data:
+
+networks:
+  node-webapp-network:
+    driver: bridge
