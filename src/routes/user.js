@@ -22,13 +22,14 @@ router
     userController.allUser
   );
 router
-  .route('/delete/:userId')
+  .route('/delete')
   .delete(
+    protect,
     authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
     userController.deleteUser
   );
 router
-  .route('/view/:userId')
+  .route('/view')
   .get(
     protect,
     authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),

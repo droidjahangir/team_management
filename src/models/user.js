@@ -111,14 +111,19 @@ const userSchema = new Schema(
         type: String,
       },
       images: [String],
-      role: {
+      avatarKey: {
         type: String,
+      },
+      role: {
+        type: [String],
         required: true,
-        enum: ['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK'],
       },
       status: {
         type: String,
         enum: ['active', 'invited'],
+      },
+      pendingTeams: {
+        type: [String],
       },
       createdAt: {
         type: Date,

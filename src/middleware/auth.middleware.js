@@ -17,6 +17,8 @@ const protect = asyncHandler(async (req, res, next) => {
 
       req.user = await User.findById(decoded.userId).select('-password');
 
+      console.log('req ====> ', req.user);
+
       next();
     } catch (error) {
       console.error(error);
@@ -33,7 +35,8 @@ const protect = asyncHandler(async (req, res, next) => {
 
 const authCheckMiddleware = (roles = []) => {
   return function (req, res, next) {
-    const userRole = req.user.roles;
+    const userRole = req.user.role;
+    console.log({ userRole });
 
     if (!roles.some((role) => userRole.includes(role))) {
       throw new HttpException(
@@ -41,6 +44,8 @@ const authCheckMiddleware = (roles = []) => {
         "You don't have permission to access this resource"
       );
     }
+
+    console.log('valid user ====>');
 
     // Continue to the next middleware or route handler
     next();

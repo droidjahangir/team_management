@@ -1,6 +1,6 @@
 import user from '../models/user.js';
 import generateToken from '../utils/generateToken.js';
-import { matchPassword, createHash } from '../helper/user.helper.js';
+// import { matchPassword, createHash } from '../helper/user.helper.js';
 
 // @desc    Register a new user
 // @route   POST /v1/user
@@ -8,20 +8,17 @@ import { matchPassword, createHash } from '../helper/user.helper.js';
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    let { roles } = req.body;
+    let { role } = req.body;
     const allowedRole = ['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK'];
     let updatedRoles = [];
 
-    if (roles?.length > 0) {
-      roles.foreach((e) => {
+    if (role?.length > 0) {
+      role.foreach((e) => {
         if (allowedRole.includes(e)) updatedRoles.push(e);
       });
     } else updatedRoles = ['ADMIN'];
 
-    console.log('updated role =========> ', updatedRoles);
-    console.log({ name, email, password });
-    console.log('roles updated =========>');
-    console.log({ user });
+    console.log({ updatedRoles });
 
     const isUserExist = await user.findOne({ email });
 
@@ -32,24 +29,22 @@ const registerUser = async (req, res) => {
 
     console.log('passed ===========>');
 
-    const hashedPassword = await createHash(password);
-
-    console.log({ name, email, hashedPassword, roles });
+    // const hashedPassword = await createHash(password);
 
     const createdUser = await user.create({
       name,
       email,
-      password: hashedPassword,
-      roles,
+      password,
+      role: updatedRoles,
     });
     console.log('passed after inserting user =============>');
 
     if (createdUser) {
       res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id),
+        _id: createdUser._id,
+        name: createdUser.name,
+        email: createdUser.email,
+        token: generateToken(createdUser._id),
       });
     } else {
       res.status(400);
@@ -72,14 +67,15 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await user.findOne({ email });
+    const userInfo = await user.findOne({ email, password });
+    // if (userInfo && (await matchPassword(userInfo.password, password))) {
 
-    if (user && (await matchPassword(password, user.password))) {
+    if (userInfo) {
       res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id),
+        _id: userInfo._id,
+        name: userInfo.name,
+        email: userInfo.email,
+        token: generateToken(userInfo._id),
       });
     } else {
       res.status(401);
@@ -114,9 +110,11 @@ const allUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    let userInfo = await user.findOneAndDelete({ _id: req.user.id });
+    console.log('request params ======> ', req.query);
+    let deletedUser = await user.findOneAndDelete({ _id: req.query.userId });
 
-    if (userInfo) {
+    console.log('Deleted user +++ ', deletedUser);
+    if (deletedUser) {
       res.status(202).json({
         success: true,
         message: 'user deleted successfully',
@@ -173,8 +171,8 @@ const updateUser = async (req, res) => {
 
 const viewUser = async (req, res) => {
   try {
-    console.log({ paramsInfo: req.params, req });
-    let data = await user.findOne({ _id: req.params.userId });
+    console.log({ queryInfo: req.query });
+    let data = await user.findOne({ _id: req.query.userId });
     if (!data)
       res.status(409).json({
         message: 'user not found.',
@@ -182,7 +180,7 @@ const viewUser = async (req, res) => {
       });
 
     res.status(200).json({
-      data: data,
+      data,
       success: true,
     });
   } catch (err) {
