@@ -11,28 +11,28 @@ router
   .route('/update')
   .post(
     protect,
-    authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
+    authCheckMiddleware(['ADMIN', 'TEAM_MEMBER']),
     userController.updateUser
   );
 router
   .route('/all')
   .get(
     protect,
-    authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
+    authCheckMiddleware(['ADMIN', 'TEAM_MEMBER']),
     userController.allUser
   );
 router
   .route('/delete')
   .delete(
     protect,
-    authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
+    authCheckMiddleware(['ADMIN', 'TEAM_MEMBER']),
     userController.deleteUser
   );
 router
   .route('/view')
   .get(
     protect,
-    authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
+    authCheckMiddleware(['ADMIN', 'TEAM_MEMBER']),
     userController.viewUser
   );
 

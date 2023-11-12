@@ -5,7 +5,7 @@ import user from '../models/user.js';
 
 // @desc    Create new team
 // @route   POST /v1/team/createTeam
-// @access  Admin
+// @access  ADMIN
 const createTeam = async (req, res) => {
   try {
     const { name, category, description, invitedUserIds = [] } = req.body;
@@ -46,9 +46,60 @@ const createTeam = async (req, res) => {
   }
 };
 
+// @desc    update new team
+// @route   PUT /v1/team/updateTeam
+// @access  ADMIN
+const updateTeam = async (req, res) => {
+  try {
+    const { teamId, name, category, goal, description } = req.body;
+
+    const isTeamExist = await team.findOne({ teamId });
+
+    if (isTeamExist) {
+      res.status(400);
+      throw new Error('Team already exists');
+    }
+
+    const updatedTeam = await team.findOneAndUpdate(
+      { _id: teamId },
+      {
+        name,
+        category,
+        goal,
+        description,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (updatedTeam) {
+      res.status(201).json({
+        _id: updatedTeam._id,
+        name: updatedTeam.name,
+        goal: updatedTeam.goal,
+        category: updatedTeam.category,
+        description: updatedTeam.description,
+        invitedUserIds: updatedTeam.invitedUserIds,
+      });
+    } else {
+      res.status(400);
+      throw new Error('Invalid team data');
+    }
+  } catch (err) {
+    console.log('ERROR:', err);
+    res.status(500).json({
+      data: null,
+      success: false,
+      message: 'Internal Server Error Occurred.',
+    });
+  }
+};
+
 // @desc    invite team member
-// @route   POST /v1/team/inviteTeamMember
-// @access  Admin
+// @route   PUT /v1/team/inviteTeamMember
+// @access  ADMIN
 const inviteTeamMember = async (req, res) => {
   try {
     const { email, teamId } = req.query;
@@ -105,8 +156,8 @@ const inviteTeamMember = async (req, res) => {
 };
 
 // @desc    Get active member list
-// @route   POST /v1/team/activeMemberList
-// @access  Admin
+// @route   GET /v1/team/activeMemberList
+// @access  ADMIN
 const getActiveMemberList = async (req, res) => {
   try {
     const { teamId } = req.query;
@@ -178,8 +229,8 @@ const getActiveMemberList = async (req, res) => {
 };
 
 // @desc    Get invited member list
-// @route   POST /v1/team/invitedMemberList
-// @access  Admin
+// @route   GET /v1/team/invitedMemberList
+// @access  ADMIN
 const getInvitedMemberList = async (req, res) => {
   try {
     const { teamId } = req.query;
@@ -250,9 +301,111 @@ const getInvitedMemberList = async (req, res) => {
   }
 };
 
+// @desc    Accepting team member request
+// @route   PUT /v1/team/acceptTeamMemberRequest
+// @access  TEAM_MEMBER
+const acceptTeamMemberRequest = async (req, res) => {
+  try {
+    const { teamId, userId } = req.query;
+
+    const updatedUserInfo = await user.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { pendingTeams: teamId } },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!size(updatedUserInfo)) {
+      res.status(400);
+      throw new Error('can not accept team member request');
+    }
+
+    const addUserToTeam = await team.findOneAndUpdate(
+      { _id: teamId },
+      { $addToSet: { userIds: userId } },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!size(addUserToTeam)) {
+      res.status(400);
+      throw new Error('can not add user to team member list');
+    }
+
+    res.status(201).json({
+      teamId: addUserToTeam._id,
+      name: addUserToTeam.name,
+      userIds: addUserToTeam.userIds,
+    });
+  } catch (err) {
+    console.log('ERROR:', err);
+    res.status(500).json({
+      data: null,
+      success: false,
+      message: 'Internal Server Error Occurred.',
+    });
+  }
+};
+
+// @desc    Rejecting team member request
+// @route   PUT /v1/team/rejectTeamMemberRequest
+// @access  TEAM_MEMBER
+const rejectTeamMemberRequest = async (req, res) => {
+  try {
+    const { teamId, userId } = req.query;
+
+    const updatedUserInfo = await user.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { pendingTeams: teamId } },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!size(updatedUserInfo)) {
+      res.status(400);
+      throw new Error('can not reject team member request');
+    }
+
+    const removeUserToTeam = await team.findOneAndUpdate(
+      { _id: teamId },
+      { $pull: { invitedUserIds: userId } },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!size(addUserToTeam)) {
+      res.status(400);
+      throw new Error('can not remove user to team member list');
+    }
+
+    res.status(201).json({
+      teamId: removeUserToTeam._id,
+      name: removeUserToTeam.name,
+      invitedUserIds: removeUserToTeam.invitedUserIds,
+    });
+  } catch (err) {
+    console.log('ERROR:', err);
+    res.status(500).json({
+      data: null,
+      success: false,
+      message: 'Internal Server Error Occurred.',
+    });
+  }
+};
+
 export {
   createTeam,
   inviteTeamMember,
   getActiveMemberList,
   getInvitedMemberList,
+  acceptTeamMemberRequest,
+  rejectTeamMemberRequest,
 };

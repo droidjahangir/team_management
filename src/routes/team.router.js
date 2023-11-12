@@ -33,34 +33,52 @@ router
     teamController.getActiveMemberList
   );
 
-// router.route('/login').post(userController.login);
-// router
-//   .route('/update')
-//   .post(
-//     protect,
-//     authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
-//     userController.updateUser
-//   );
-// router
-//   .route('/all')
-//   .get(
-//     protect,
-//     authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
-//     userController.allUser
-//   );
-// router
-//   .route('/delete')
-//   .delete(
-//     protect,
-//     authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
-//     userController.deleteUser
-//   );
-// router
-//   .route('/view')
-//   .get(
-//     protect,
-//     authCheckMiddleware(['ADMIN', 'FRONTEND', 'BACKEND', 'FULL_STACK']),
-//     userController.viewUser
-//   );
+router
+  .route('/inviteTeamMember')
+  .put(
+    protect,
+    authCheckMiddleware(['ADMIN']),
+    teamController.inviteTeamMember
+  );
+
+router
+  .route('/getActiveMemberList')
+  .get(
+    protect,
+    authCheckMiddleware(['ADMIN']),
+    teamController.getActiveMemberList
+  );
+
+router
+  .route('/invitedMemberList')
+  .get(
+    protect,
+    authCheckMiddleware(['ADMIN']),
+    teamController.getInvitedMemberList
+  );
+
+router
+  .route('/invitedMemberList')
+  .get(
+    protect,
+    authCheckMiddleware(['ADMIN']),
+    teamController.getInvitedMemberList
+  );
+
+router
+  .route('/acceptTeamMemberRequest')
+  .put(
+    protect,
+    authCheckMiddleware(['TEAM_MEMBER']),
+    teamController.acceptTeamMemberRequest
+  );
+
+router
+  .route('/rejectTeamMemberRequest')
+  .put(
+    protect,
+    authCheckMiddleware(['TEAM_MEMBER']),
+    teamController.rejectTeamMemberRequest
+  );
 
 export default router;
