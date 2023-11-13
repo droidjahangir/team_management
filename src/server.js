@@ -6,12 +6,19 @@ import { mongoConnect } from './config/db.js';
 
 dotenv.config();
 
-const PORT = process.env.NODE_PORT || 4001;
+const start = async () => {
+  try {
+    const PORT = process.env.NODE_PORT || 4001;
 
-const server = http.createServer(app);
+    const server = http.createServer(app);
 
-await mongoConnect();
+    await mongoConnect();
 
-server.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}...`);
-});
+    server.listen(PORT, () => {
+      console.log(`Listening on port ${PORT}...`);
+    });
+  } catch (err) {
+    console.error({ err });
+  }
+};
+start();
